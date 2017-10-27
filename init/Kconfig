@@ -966,6 +966,61 @@ config CC_OPTIMIZE_FOR_SIZE
 
 	  If unsure, say Y.
 
+menuconfig CONFIG_SINAI_TWEAKS
+	boolean "SINAI-N4 Optimization tweaks"
+	depends on !CC_OPTIMIZE_FOR_SIZE
+	default n
+	help
+	  This option adds support of tunables for GCC optimization flags
+
+	  And it conflicts with CC_OPTIMIZE_FOR_SIZE so enables this option will hide CC_OPTIMIZE_FOR_SIZE
+
+	  Say N if unsure.
+
+if CONFIG_SINAI_TWEAKS
+
+config CC_GRAPHITE_OPTIMIZATION
+	bool "Enable graphite optimizations"
+	default n
+	help
+	  Enabling this option will turn on graphite optimizations.
+	  Without this option you can't enable higher GCC level optimizations
+
+config CC_HIGHER_OPTIMIZATION
+	bool "Enable higher GCC optimization level on kernel"
+	depends on CC_GRAPHITE_OPTIMIZATION
+	default n
+	help
+	  Enabling this option will turn on some -O3 related flags
+
+config CC_MODULE_OPTIMIZATION
+	bool "Enable higher GCC optimization level on modules"
+	default n
+	depends on CC_HIGHER_OPTIMIZATION
+	help
+	  Enabling this option will turn on some -O3 related flags on modules
+
+config CC_UNSAFE_OPTIMIZATION
+	bool "Enable unsafe optimizations on kernel"
+	depends on CC_HIGHER_OPTIMIZATION
+	default n
+	help
+	  Enabling this option will turn those flags:
+	  -mvectorize-with-neon-quad
+	  -ftree-vectorize
+	  -fipa-pta
+	  -ffast-math
+
+config CC_KERNEL_DEBUGABLE
+	bool "Silence few debug warnings on GCC5 and higher"
+	default n
+	help
+	  Enabling this option will silence few warnings which come with new GCC 
+	  Flags that will be used:
+	  -Wno-misleading-indentation -Wno-unused-variable
+
+endif #CONFIG_SINAI_TWEAKS
+
 config SYSCTL
 	bool
 

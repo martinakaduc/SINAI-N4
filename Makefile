@@ -244,12 +244,13 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -fgcse-las -pipe -DNDEBUG -std=gnu89 -fno-tree-vectorize
-HOSTCXXFLAGS = -pipe -DNDEBUG -O2 -fgcse-las -fno-tree-vectorize
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -std=gnu89 -fomit-frame-pointer -fgcse-las -pipe -DNDEBUG
+HOSTCXXFLAGS = -pipe -DNDEBUG -O2 -fgcse-las 
 
-# More Graphite
+ifdef CC_GRAPHITE_OPTIMIZATION
 HOSTCXXFLAGS += -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
 HOSTCFLAGS += -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+endif
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -350,15 +351,29 @@ CHECK		= sparse
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 
-KERNELFLAGS  = -std=gnu89 -fopenmp -pipe -O2 -DNDEBUG -munaligned-access -fgcse-lm -fgcse-sm -fsingle-precision-constant -fforce-addr -fsched-spec-load -mtune=cortex-a15 -marm -mfpu=neon-vfpv4 -ftree-vectorize -fpredictive-commoning -ffast-math -floop-nest-optimize -fno-tree-vectorize $(GRAPHITE_FLAGS)
-
-MODFLAGS  = -DMODULE $(KERNELFLAGS)
-CFLAGS_MODULE   = $(MODFLAGS) -fno-pic
-AFLAGS_MODULE   = $(MODFLAGS)
-LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
-CFLAGS_KERNEL  = $(KERNELFLAGS)
+ifdef CC_GRAPHITE_OPTIMIZATION
 GRAPHITE_FLAGS  = -fgraphite -fgraphite-identity -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
-AFLAGS_KERNEL  = $(KERNELFLAGS)
+endif
+
+ifdef CC_HIGHER_OPTIMIZATION
+KERNELFLAGS  = -std=gnu89 -pipe -O2 -DNDEBUG -munaligned-access -fgcse-lm -fgcse-sm -fsingle-precision-constant -fforce-addr -fsched-spec-load -mtune=cortex-a15 -marm -mfpu=neon-vfpv4 -fpredictive-commoning -floop-nest-optimize $(GRAPHITE_FLAGS)
+
+CFLAGS_KERNEL += $(KERNELFLAGS)
+AFLAGS_KERNEL += $(KERNELFLAGS)
+endif
+
+ifdef CC_MODULE_OPTIMIZATION
+MODFLAGS  = -DMODULE $(KERNELFLAGS)
+
+CFLAGS_MODULE += $(MODFLAGS)
+AFLAGS_MODULE += $(MODFLAGS)
+endif
+
+CFLAGS_MODULE   = -fno-pic
+AFLAGS_MODULE   = 
+LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
+CFLAGS_KERNEL  = 
+AFLAGS_KERNEL  = 
 CFLAGS_GCOV     = -fprofile-arcs -ftest-coverage
 
 # Use LINUXINCLUDE when you must reference the include/ directory.
@@ -370,21 +385,32 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
+ifdef CC_HIGHER_OPTIMIZATION
+KBUILD_CFLAGS +=  -Ofast -fivopts -fpredictive-commoning -fgcse-after-reload -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-tree-vectorize -mno-unaligned-access -mtune=cortex-a15 -mfpu=neon-vfpv4
+KBUILD_CFLAGS += $(GRAPHITE_FLAGS)
+endif
+
+ifdef CC_UNSAFE_OPTIMIZATION
+KBUILD_CFLAGS += -fipa-pta -mvectorize-with-neon-quad
+CFLAGS_KERNEL += -fipa-pta -ffast-math -mvectorize-with-neon-quad
+AFLAGS_KERNEL += -fipa-pta -ffast-math -mvectorize-with-neon-quad
+endif
+
+ifdef CC_KERNEL_DEBUGABLE
+KBUILD_CFLAGS += -Wno-misleading-indentation -Wno-unused-variable -g0
+endif
+
 KBUILD_CFLAGS   := -Wall -DNDEBUG -Wundef -Wstrict-prototypes -Wno-trigraphs \
                    -fno-strict-aliasing -fno-common \
                    -Werror-implicit-function-declaration \
                    -Wno-format-security \
                    -Wno-shift-overflow -Wno-tautological-compare \
                    -Wno-unused-const-variable \
-		   -Wno-maybe-uninitialized \
+		   		   -Wno-maybe-uninitialized \
                    -Wno-sizeof-pointer-memaccess \
                    -fno-delete-null-pointer-checks \
- 		   -fpredictive-commoning -fgcse-after-reload \
-                   -fmodulo-sched -fmodulo-sched-allow-regmoves \
-		   -ftree-vectorize -mno-unaligned-access \
-		   -mtune=cortex-a15 -mfpu=neon-vfpv4 \
-		   -std=gnu89 \
-		   $(GRAPHITE_FLAGS)
+				   -std=gnu89 
+		   
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
