@@ -606,7 +606,7 @@ AFLAGS_KERNEL += -fipa-pta -ffast-math -mvectorize-with-neon-quad
 endif
 
 ifdef CONFIG_CC_KERNEL_DEBUGABLE
-KBUILD_CFLAGS += -Wno-misleading-indentation -Wno-unused-variable -g0
+KBUILD_CFLAGS += -Wno-misleading-indentation -Wno-unused-variable -Wno-bool-compare -Wno-array-bounds
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
