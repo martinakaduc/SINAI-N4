@@ -5,7 +5,7 @@ exit 1
 
 KERNELNAME=SINAI-N4
 DEVICE=mako
-BRANCH=mako
+BRANCH=sudokamikaze_kernels
 VER=N
 MODULES=false
 PATCH=true
