@@ -358,29 +358,6 @@ CFLAGS_KERNEL  =
 AFLAGS_KERNEL  = 
 CFLAGS_GCOV     = -fprofile-arcs -ftest-coverage
 
-ifdef CONFIG_CC_GRAPHITE_OPTIMIZATION
-GRAPHITE_FLAGS  = -fgraphite -fgraphite-identity -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
-endif
-
-ifdef CONFIG_CC_HIGHER_OPTIMIZATION
-KERNELFLAGS  = -std=gnu89 -pipe -O2 -DNDEBUG -munaligned-access -fgcse-lm -fgcse-sm -fsingle-precision-constant -fforce-addr -fsched-spec-load -mtune=cortex-a15 -marm -mfpu=neon-vfpv4 -fpredictive-commoning -floop-nest-optimize $(GRAPHITE_FLAGS)
-
-CFLAGS_KERNEL += $(KERNELFLAGS)
-AFLAGS_KERNEL += $(KERNELFLAGS)
-endif
-
-ifdef CONFIG_CC_MODULE_OPTIMIZATION
-MODFLAGS  = -DMODULE $(KERNELFLAGS)
-
-CFLAGS_MODULE += $(MODFLAGS)
-AFLAGS_MODULE += $(MODFLAGS)
-endif
-
-ifdef CONFIG_CC_UNSAFE_OPTIMIZATION
-CFLAGS_KERNEL += -fipa-pta -ffast-math -mvectorize-with-neon-quad
-AFLAGS_KERNEL += -fipa-pta -ffast-math -mvectorize-with-neon-quad
-endif
-
 # Use LINUXINCLUDE when you must reference the include/ directory.
 # Needed to be compatible with the O= option
 LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
@@ -607,6 +584,29 @@ endif
 
 ifdef CONFIG_CC_KERNEL_DEBUGABLE
 KBUILD_CFLAGS += -Wno-misleading-indentation -Wno-unused-variable -Wno-bool-compare -Wno-array-bounds
+endif
+
+ifdef CONFIG_CC_GRAPHITE_OPTIMIZATION
+GRAPHITE_FLAGS  = -fgraphite -fgraphite-identity -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+endif
+
+ifdef CONFIG_CC_HIGHER_OPTIMIZATION
+KERNELFLAGS  = -std=gnu89 -pipe -O2 -DNDEBUG -munaligned-access -fgcse-lm -fgcse-sm -fsingle-precision-constant -fforce-addr -fsched-spec-load -mtune=cortex-a15 -marm -mfpu=neon-vfpv4 -fpredictive-commoning -floop-nest-optimize $(GRAPHITE_FLAGS)
+
+CFLAGS_KERNEL += $(KERNELFLAGS)
+AFLAGS_KERNEL += $(KERNELFLAGS)
+endif
+
+ifdef CONFIG_CC_MODULE_OPTIMIZATION
+MODFLAGS  = -DMODULE $(KERNELFLAGS)
+
+CFLAGS_MODULE += $(MODFLAGS)
+AFLAGS_MODULE += $(MODFLAGS)
+endif
+
+ifdef CONFIG_CC_UNSAFE_OPTIMIZATION
+CFLAGS_KERNEL += -fipa-pta -ffast-math -mvectorize-with-neon-quad
+AFLAGS_KERNEL += -fipa-pta -ffast-math -mvectorize-with-neon-quad
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
