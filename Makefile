@@ -350,7 +350,7 @@ CHECK		= sparse
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 
-KERNELFLAGS  = -std=gnu89 -pipe -O2 -DNDEBUG -munaligned-access -fgcse-lm -fgcse-sm -fsingle-precision-constant -fforce-addr -fsched-spec-load -mtune=cortex-a15 -marm -mfpu=neon-vfpv4 -ftree-vectorize -fpredictive-commoning -ffast-math -floop-nest-optimize -fno-tree-vectorize $(GRAPHITE_FLAGS)
+KERNELFLAGS  = -pipe -O2 -DNDEBUG -munaligned-access -fgcse-lm -fgcse-sm -fsingle-precision-constant -fforce-addr -fsched-spec-load -mtune=cortex-a15 -marm -mfpu=neon-vfpv4 -ftree-vectorize -fpredictive-commoning -ffast-math -floop-nest-optimize -fno-tree-vectorize $(GRAPHITE_FLAGS)
 
 MODFLAGS  = -DMODULE $(KERNELFLAGS)
 CFLAGS_MODULE   = $(MODFLAGS) -fno-pic
@@ -379,7 +379,8 @@ KBUILD_CFLAGS   := -Wall -DNDEBUG -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		               -Wno-maybe-uninitialized \
                    -Wno-sizeof-pointer-memaccess \
                    -fno-delete-null-pointer-checks \
-		   				 		 -mtune=cortex-a15 -mfpu=neon-vfpv4
+		   				 		 -mtune=cortex-a15 -mfpu=neon-vfpv4 \
+									  -std=gnu89
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
