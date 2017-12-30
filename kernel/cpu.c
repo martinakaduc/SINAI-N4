@@ -346,12 +346,10 @@ static int _cpu_up(unsigned int cpu, int tasks_frozen)
 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
 	struct task_struct *idle;
 
-	cpu_hotplug_begin();
+	if (cpu_online(cpu) || !cpu_present(cpu))
+		return -EINVAL;
 
-	if (cpu_online(cpu) || !cpu_present(cpu)) {
-		ret = -EINVAL;
-		goto out;
-	}
+	cpu_hotplug_begin();
 
 	idle = idle_thread_get(cpu);
 	if (IS_ERR(idle)) {
