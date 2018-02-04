@@ -244,12 +244,12 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 -fno-tree-vectorize -fomit-frame-pointer -fgcse-las -std=gnu89
-HOSTCXXFLAGS = -O3 -fno-tree-vectorize -fgcse-las
+HOSTCFLAGS   = -Wall -pipe -Wmissing-prototypes -Wstrict-prototypes -O2 -fno-tree-vectorize -fomit-frame-pointer -std=gnu89 
+HOSTCXXFLAGS = -pipe -O2 -fno-tree-vectorize
 
 # More Graphite
-HOSTCXXFLAGS += -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
-HOSTCFLAGS += -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+# HOSTCXXFLAGS += -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+# HOSTCFLAGS += -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -350,12 +350,11 @@ CHECK		= sparse
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 
-KERNELFLAGS	= -munaligned-access -fforce-addr -fsingle-precision-constant -mcpu=cortex-a15 -mtune=cortex-a15 -marm -mfpu=neon-vfpv4 -fno-tree-vectorize -fgcse-las
 GRAPHITE_FLAGS  = -fgraphite -fgraphite-identity -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+KERNELFLAGS  = -pipe -O2 -munaligned-access -fgcse-lm -fgcse-sm -fsingle-precision-constant -mtune=cortex-a15 -marm -mfpu=neon -fno-tree-vectorize
 
-MODFLAGS  = -DMODULE $(KERNELFLAGS)
-CFLAGS_MODULE   = $(MODFLAGS) -fno-pic
-AFLAGS_MODULE   = $(MODFLAGS)
+CFLAGS_MODULE   =  -fno-pic
+AFLAGS_MODULE   = 
 LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
 CFLAGS_KERNEL  = $(KERNELFLAGS)
 AFLAGS_KERNEL  = $(KERNELFLAGS)
@@ -375,12 +374,11 @@ KBUILD_CFLAGS   := -Wall -DNDEBUG -Wundef -Wstrict-prototypes -Wno-trigraphs \
                    -Werror-implicit-function-declaration \
                    -Wno-format-security \
                    -Wno-shift-overflow -Wno-tautological-compare \
-                   -Wno-unused-const-variable \
-		               -Wno-maybe-uninitialized \
-                   -Wno-sizeof-pointer-memaccess \
-                   -fno-delete-null-pointer-checks \
-		   				 		 -mtune=cortex-a15 -mfpu=neon-vfpv4 \
-									  -std=gnu89
+				   -fno-tree-vectorize -Wno-array-bounds -fno-inline-functions \
+                   -Wno-sizeof-pointer-memaccess -Wno-misleading-indentation -Wno-duplicate-decl-specifier \
+                   -fno-delete-null-pointer-checks -mno-unaligned-access \
+		   		   -mtune=cortex-a15 -mfpu=neon \
+				   -std=gnu89
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
@@ -570,12 +568,13 @@ endif # $(dot-config)
 # Defaults to vmlinux, but the arch makefile usually adds further targets
 all: vmlinux
 
+KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
+KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
+KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
+KBUILD_CFLAGS   += $(call cc-disable-warning,array-bounds)
+
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
-else
-KBUILD_CFLAGS += -O3 -g0 -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-tree-vectorize -Wno-array-bounds -fivopts -fno-inline-functions
-KBUILD_CFLAGS   += $(call cc-disable-warning,maybe-uninitialized)
-KBUILD_CFLAGS   += $(call cc-disable-warning,array-bounds)
 endif
 
 # Disable all maybe-uninitialized warnings
@@ -589,7 +588,6 @@ KBUILD_CFLAGS   += $(call cc-disable-warning,format-truncation,)
 
 # Needed to unbreak GCC 7.x and above
 KBUILD_CFLAGS   += $(call cc-option,-fno-store-merging,)
-
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
