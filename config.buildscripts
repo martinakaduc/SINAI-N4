@@ -9,7 +9,6 @@ BRANCH=sudokamikaze_kernels
 VER=N
 MODULES=false
 PATCH=true
-CLEAN_TOOLCHAIN_PATH="$HOME/storage/toolchains/clean-tc"
 TOOLCHAIN_PATH="$HOME/storage/toolchains/7.2_a15"
 ONLYZIMAGE=true
 FLASHER=anykernel
