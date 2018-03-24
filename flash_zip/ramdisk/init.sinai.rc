@@ -1,0 +1,50 @@
+#
+# Init script for SINAI-N4 feature specific elements
+#
+
+on post-fs-data
+
+    # Adjust governors/frequencies
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "hellsactive"
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor "hellsactive"
+    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor "hellsactive"
+    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor "hellsactive"
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1512000
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq 1512000
+    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq 1512000
+    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq 1512000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 384000
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq 384000
+    write /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq 384000
+    write /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq 384000
+
+    write /sys/devices/system/cpu/cpu1/online 1
+    write /sys/devices/system/cpu/cpu2/online 1
+    write /sys/devices/system/cpu/cpu3/online 1
+
+    # Disable High Brightness mode
+    write /sys/devices/i2c-0/0-0038/lm3530_br_mode 0
+
+    # GPU
+    write /sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/max_gpuclk 200000000
+    write /sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/pwrscale/trustzone/governor simple
+
+    # Set MAPLE Iosched
+    write /sys/block/mmcblk0/queue/scheduler maple
+
+    # Enable StateNotifier bydefault
+    write /sys/module/state_notifier/parameters/enabled Y
+
+    # Disable DYN by default
+    write /sys/module/dyn_hotplug/parameters/enabled 0
+
+    # Mako-Hotplug
+    write /sys/devices/virtual/misc/mako_hotplug_control/cpufreq_unplug_limit 1242000
+    write /sys/devices/virtual/misc/mako_hotplug_control/load_threshold 75
+    write /sys/devices/virtual/misc/mako_hotplug_control/high_load_counter 5
+
+    # I/O
+    write /sys/block/mmcblk0/queue/nomerges 1
+    write /sys/block/mmcblk0/queue/rq_affinity 2
+    write /sys/block/mmcblk0/queue/add_random 0
+    write /sys/block/mmcblk0/bdi/min_ratio 5
